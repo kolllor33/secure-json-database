@@ -1,0 +1,14 @@
+{
+  "name": "secure_json_database",
+  "version": "1.0.0",
+  "description": "a secure json file that serves as a database",
+  "main": "index.js",
+  "scripts": {
+    
+  },
+  "author": "Kobe Bogaerts",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.4"
+  }
+}
