@@ -63,3 +63,4 @@ var allData = SecureJsonDB.findAll("table name", properties) //properties must b
 // allData is an array off all the matched data
 ```
 
+## Examples
