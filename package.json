@@ -5,8 +5,15 @@
   "main": "index.js",
   "scripts": {},
   "author": "Kobe Bogaerts",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "lodash": "^4.17.4"
+  }, 
+  "keywords": [
+    
+  ], 
+  "bugs": {
+    "url": "https://github.com/kolllor33/secure-json-database",
+    "email": "kolllor3@gmail.com"
   }
 }
