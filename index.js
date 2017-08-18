@@ -37,12 +37,17 @@ module.exports = class {
     }
 
     insert(tablename, data) {
-        if (this.db[tablename] != undefined) {
-            data.id = this.genUUID()
-            this.db[tablename].push(data)
-            this.update()
+        if (data != undefined) {
+            if (this.db[tablename] != undefined) {
+                data.id = this.genUUID()
+                this.db[tablename].push(data)
+                this.update()
+            } else {
+                throw new Error("Table wasn't created")
+            }
         } else {
-            throw new Error("Table wasn't created")
+            console.error("Error: Data was null or undefined!")
+            return
         }
     }
 
@@ -57,18 +62,23 @@ module.exports = class {
     }
 
     updateByID(tablename, id, data) {
-        if (this.db[tablename] != undefined) {
-            var updated = _.filter(this.db[tablename], {
-                id: id
-            })
-            if (updated[0] === undefined) {
-                return
+        if (data != undefined) {
+            if (this.db[tablename] != undefined) {
+                var updated = _.filter(this.db[tablename], {
+                    id: id
+                })
+                if (updated[0] === undefined) {
+                    return
+                }
+                const index = _.sortedIndexBy(this.db[tablename], updated[0])
+                Object.assign(this.db[tablename][index], data)
+                this.update()
+            } else {
+                throw new Error("Table wasn't created")
             }
-            const index = _.sortedIndexBy(this.db[tablename], updated[0])
-            Object.assign(this.db[tablename][index], data)
-            this.update()
         } else {
-            throw new Error("Table wasn't created")
+            console.error("Error: Data was null or undefined!")
+            return
         }
     }
 
