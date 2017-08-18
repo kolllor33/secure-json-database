@@ -1,11 +1,11 @@
 # sjdb - a secure json database
 
-##Install
+## Install
 ´´´shell
 $ npm install secure_json_database --save
 ´´´
 
-##Implementing
+## Implementing
 First initialize a object for your database.
 ´´´js
 var sjdb = require("secure_json_database")
@@ -16,7 +16,7 @@ var SecureJsonDB = new sjdb({
 })
 ´´´
 
-###Tables
+### Tables
 A table is just a way of organizing your data easily
 
 ´´´js
@@ -30,7 +30,7 @@ SecureJsonDB.getAllTableNames()
 SecureJsonDB.getTable("table name")
 ´´´
 
-###Manipulating data
+### Manipulating data
 Adding data to the database is very simple
 
 ´´´js
@@ -49,7 +49,7 @@ Updating a data entry
 SecureJsonDB.updateByID("table name", "id of the entry", obj) //obj is an object with the uptedated data in it
 ´´´
 
-###Finding data
+### Finding data
 
 ´´´js
 //finding the first data that has the propertie you give
@@ -62,3 +62,5 @@ var lastData = SecureJsonDB.findLast("table name", properties) //properties must
 var allData = SecureJsonDB.findAll("table name", properties) //properties must be an object
 // allData is an array off all the matched data
 ´´´
+
+## Examples
