@@ -9,7 +9,7 @@
   "dependencies": {
     "lodash": "^4.17.4"
   },
-  "keywords": [],
+  "keywords": ["db", "secure", "database", "json"],
   "repository": {
     "type": "git",
     "url": "https://github.com/kolllor33/secure-json-database.git"
