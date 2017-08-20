@@ -28,13 +28,12 @@ module.exports = class {
         }
     }
 
-    write(data, callback) {
-        fs.writeFile(this.path, this.encrypt(data), "utf8", (err) => {
-            if (err) {
-                onError(err)
-            }
-            callback()
-        })
+    write(data) {
+        try{
+            fs.writeFileSync(this.path, this.encrypt(data))
+        }catch(err){
+            onError(err)
+        }
     }
 
     read(callback) {

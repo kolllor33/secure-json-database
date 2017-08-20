@@ -37,17 +37,21 @@ module.exports = class {
     }
 
     insert(tablename, data) {
-        if (data != undefined) {
-            if (this.db[tablename] != undefined) {
-                data.id = this.genUUID()
-                this.db[tablename].push(data)
-                this.update()
+        try{
+            if (data != undefined) {
+                if (this.db[tablename] != undefined) {
+                    data.id = this.genUUID()
+                    this.db[tablename].push(data)
+                    this.update()
+                } else {
+                    throw new Error("Table wasn't created")
+                }
             } else {
-                throw new Error("Table wasn't created")
+                console.error("Error: Data was null or undefined!")
+                return
             }
-        } else {
-            console.error("Error: Data was null or undefined!")
-            return
+        }catch(err){
+            console.log(err)
         }
     }
 
@@ -117,6 +121,6 @@ module.exports = class {
     }
 
     update() {
-        this.fileHandler.write(this.db, () => {})
+        this.fileHandler.write(this.db)
     }
 }
