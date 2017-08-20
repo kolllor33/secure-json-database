@@ -1,6 +1,6 @@
 {
   "name": "secure_json_database",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "a secure json file that serves as a database",
   "main": "index.js",
   "scripts": {},
@@ -9,7 +9,13 @@
   "dependencies": {
     "lodash": "^4.17.4"
   },
-  "keywords": ["db", "secure", "database", "json"],
+  "keywords": [
+    "db",
+    "secure",
+    "database",
+    "json",
+    "security"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/kolllor33/secure-json-database.git"
