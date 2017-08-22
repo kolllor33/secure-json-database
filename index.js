@@ -1,10 +1,13 @@
 "use strict";
 
 var _ = require("lodash"),
-    fh = require("./Filehandler")
+    fh = require("./Filehandler"),
+    EventEmitter = require('events')
 
-module.exports = class {
+
+module.exports = class DB extends EventEmitter {
     constructor(args) {
+        super()
         this.db = {}
         this.path = args.path
         this.key = args.key
@@ -37,11 +40,13 @@ module.exports = class {
     }
 
     insert(tablename, data) {
-        try{
+        try {
             if (data != undefined) {
                 if (this.db[tablename] != undefined) {
                     data.id = this.genUUID()
                     this.db[tablename].push(data)
+                    //event emiter
+                    this.emit("insert", tablename, data)
                     this.update()
                 } else {
                     throw new Error("Table wasn't created")
@@ -50,7 +55,7 @@ module.exports = class {
                 console.error("Error: Data was null or undefined!")
                 return
             }
-        }catch(err){
+        } catch (err) {
             console.log(err)
         }
     }
@@ -59,6 +64,8 @@ module.exports = class {
         if (this.db[tablename] != undefined) {
             var removed = this.findAll(tablename, args)
             _.pullAllBy(this.db[tablename], removed)
+            //event emiter
+            this.emit("delete", tablename, removed)
             this.update()
         } else {
             throw new Error("Table wasn't created")
@@ -76,6 +83,8 @@ module.exports = class {
                 }
                 const index = _.sortedIndexBy(this.db[tablename], updated[0])
                 Object.assign(this.db[tablename][index], data)
+                //event emiter
+                this.emit("updated", tablename, this.db[tablename][index])
                 this.update()
             } else {
                 throw new Error("Table wasn't created")
@@ -122,5 +131,6 @@ module.exports = class {
 
     update() {
         this.fileHandler.write(this.db)
+        this.emit("write")
     }
 }
