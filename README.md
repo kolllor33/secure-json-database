@@ -66,7 +66,7 @@ var allData = SecureJsonDB.findAll("table name", properties) //properties must b
 
 ### Events
 
-In version 1.1.0 there are events that you can use. The event where you can listen on are "insert","updated","delete" and "write"
+In version 1.1.0 there are events that you can use. The events you can listen on are "insert","updated","delete" and "write"
 
 ```js
 //the insert event is triggerd when you add data to the database
