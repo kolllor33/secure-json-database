@@ -1,7 +1,7 @@
 {
   "name": "secure_json_database",
-  "version": "1.0.5",
-  "description": "a secure json file that serves as a database",
+  "version": "1.1.0",
+  "description": "A secure json database that is easy to use.",
   "main": "index.js",
   "scripts": {},
   "author": "Kobe Bogaerts",
@@ -14,7 +14,8 @@
     "secure",
     "database",
     "json",
-    "security"
+    "security",
+    "simple"
   ],
   "repository": {
     "type": "git",

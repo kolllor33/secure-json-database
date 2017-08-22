@@ -1,8 +1,9 @@
-# sjdb - a secure json database
+# sjdb - A secure json database
 
 ## Install
 ```shell
-$ npm install secure_json_database --save
+$ npm install secure_json_database --save 
+$ npm install secure_json_database
 ```
 
 ## Implementing
@@ -61,6 +62,32 @@ var lastData = SecureJsonDB.findLast("table name", properties) //properties must
 //finding all data that have the propertie you give
 var allData = SecureJsonDB.findAll("table name", properties) //properties must be an object
 // allData is an array off all the matched data
+```
+
+### Events
+
+In version 1.1.0 there are events that you can use. The event where you can listen on are "insert","updated","delete" and "write"
+
+```js
+//the insert event is triggerd when you add data to the database
+SecureJsonDB.on("insert", function (tablename, InsertedData){
+
+})
+
+//the update event is triggerd when you update data in the database
+SecureJsonDB.on("updated", function (tablename, UpdatedData){
+
+})
+
+//the delete event is triggerd when you remove data in the database
+SecureJsonDB.on("delete", function (tablename, RemovedData){  //Note: RemovedData is an array of all entries that are removed 
+
+})
+
+//the write event is triggerd when the database is writen to the database file
+SecureJsonDB.on("write", function (){
+
+})
 ```
 
 ## Examples
