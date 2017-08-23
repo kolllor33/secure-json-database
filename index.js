@@ -11,6 +11,10 @@ module.exports = class DB extends EventEmitter {
         this.db = {}
         this.path = args.path
         this.key = args.key
+        this.updateCalls = 0
+        this.previousCallTime = undefined
+        this.canCall = true
+        this.canCallTreshold = undefined
         this.fileHandler = new fh({
             path: this.path,
             key: this.key
@@ -45,9 +49,9 @@ module.exports = class DB extends EventEmitter {
                 if (this.db[tablename] != undefined) {
                     data.id = this.genUUID()
                     this.db[tablename].push(data)
+                    this.update()
                     //event emiter
                     this.emit("insert", tablename, data)
-                    this.update()
                 } else {
                     throw new Error("Table wasn't created")
                 }
@@ -64,9 +68,9 @@ module.exports = class DB extends EventEmitter {
         if (this.db[tablename] != undefined) {
             var removed = this.findAll(tablename, args)
             _.pullAllBy(this.db[tablename], removed)
-            //event emiter
-            this.emit("delete", tablename, removed)
             this.update()
+            //event emiter
+            this.emit("remove", tablename, removed)
         } else {
             throw new Error("Table wasn't created")
         }
@@ -83,9 +87,9 @@ module.exports = class DB extends EventEmitter {
                 }
                 const index = _.sortedIndexBy(this.db[tablename], updated[0])
                 Object.assign(this.db[tablename][index], data)
+                this.update()
                 //event emiter
                 this.emit("updated", tablename, this.db[tablename][index])
-                this.update()
             } else {
                 throw new Error("Table wasn't created")
             }
@@ -130,7 +134,17 @@ module.exports = class DB extends EventEmitter {
     }
 
     update() {
-        this.fileHandler.write(this.db)
-        this.emit("write")
+        this.updateCalls++
+            if (this.canCall) {
+                this.previousCallTime = new Date()
+                this.fileHandler.write(this.db)
+                this.emit("write")
+            }
+        if (this.updateCalls == this.canCallTreshold) {
+            this.canCall = true
+        } else if ((new Date() - this.previousCallTime) < 65) {
+            this.canCallTreshold = this.updateCalls + 10
+            this.canCall = false
+        }
     }
 }
