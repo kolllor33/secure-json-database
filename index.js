@@ -11,10 +11,17 @@ module.exports = class DB extends EventEmitter {
         this.db = {}
         this.path = args.path
         this.key = args.key
+        this.autoUpdate = true
+        //update performes boost
         this.updateCalls = 0
         this.previousCallTime = undefined
         this.canCall = true
         this.canCallTreshold = undefined
+        //disables auto update
+        if(args.manual){
+            this.autoUpdate = false
+        }
+
         this.fileHandler = new fh({
             path: this.path,
             key: this.key
@@ -49,7 +56,9 @@ module.exports = class DB extends EventEmitter {
                 if (this.db[tablename] != undefined) {
                     data.id = this.genUUID()
                     this.db[tablename].push(data)
-                    this.update()
+                    if(this.autoUpdate){
+                        this.update()
+                    }
                     //event emiter
                     this.emit("insert", tablename, data)
                 } else {
@@ -68,7 +77,9 @@ module.exports = class DB extends EventEmitter {
         if (this.db[tablename] != undefined) {
             var removed = this.findAll(tablename, args)
             _.pullAllBy(this.db[tablename], removed)
-            this.update()
+            if(this.autoUpdate){
+                this.update()
+            }
             //event emiter
             this.emit("remove", tablename, removed)
         } else {
@@ -87,7 +98,9 @@ module.exports = class DB extends EventEmitter {
                 }
                 const index = _.sortedIndexBy(this.db[tablename], updated[0])
                 Object.assign(this.db[tablename][index], data)
-                this.update()
+                if(this.autoUpdate){
+                    this.update()
+                }
                 //event emiter
                 this.emit("updated", tablename, this.db[tablename][index])
             } else {
