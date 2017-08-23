@@ -11,6 +11,7 @@ module.exports = class DB extends EventEmitter {
         this.db = {}
         this.path = args.path
         this.key = args.key
+<<<<<<< HEAD
         this.autoUpdate = true
         //update performes boost
         this.updateCalls = 0
@@ -22,6 +23,8 @@ module.exports = class DB extends EventEmitter {
             this.autoUpdate = false
         }
 
+=======
+>>>>>>> parent of 20d032a... Performance enhancing
         this.fileHandler = new fh({
             path: this.path,
             key: this.key
@@ -56,11 +59,15 @@ module.exports = class DB extends EventEmitter {
                 if (this.db[tablename] != undefined) {
                     data.id = this.genUUID()
                     this.db[tablename].push(data)
+<<<<<<< HEAD
                     if(this.autoUpdate){
                         this.update()
                     }
+=======
+>>>>>>> parent of 20d032a... Performance enhancing
                     //event emiter
                     this.emit("insert", tablename, data)
+                    this.update()
                 } else {
                     throw new Error("Table wasn't created")
                 }
@@ -77,11 +84,15 @@ module.exports = class DB extends EventEmitter {
         if (this.db[tablename] != undefined) {
             var removed = this.findAll(tablename, args)
             _.pullAllBy(this.db[tablename], removed)
+<<<<<<< HEAD
             if(this.autoUpdate){
                 this.update()
             }
+=======
+>>>>>>> parent of 20d032a... Performance enhancing
             //event emiter
-            this.emit("remove", tablename, removed)
+            this.emit("delete", tablename, removed)
+            this.update()
         } else {
             throw new Error("Table wasn't created")
         }
@@ -98,11 +109,15 @@ module.exports = class DB extends EventEmitter {
                 }
                 const index = _.sortedIndexBy(this.db[tablename], updated[0])
                 Object.assign(this.db[tablename][index], data)
+<<<<<<< HEAD
                 if(this.autoUpdate){
                     this.update()
                 }
+=======
+>>>>>>> parent of 20d032a... Performance enhancing
                 //event emiter
                 this.emit("updated", tablename, this.db[tablename][index])
+                this.update()
             } else {
                 throw new Error("Table wasn't created")
             }
@@ -147,17 +162,7 @@ module.exports = class DB extends EventEmitter {
     }
 
     update() {
-        this.updateCalls++
-            if (this.canCall) {
-                this.previousCallTime = new Date()
-                this.fileHandler.write(this.db)
-                this.emit("write")
-            }
-        if (this.updateCalls == this.canCallTreshold) {
-            this.canCall = true
-        } else if ((new Date() - this.previousCallTime) < 65) {
-            this.canCallTreshold = this.updateCalls + 10
-            this.canCall = false
-        }
+        this.fileHandler.write(this.db)
+        this.emit("write")
     }
 }
