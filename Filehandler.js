@@ -11,6 +11,13 @@ module.exports = class {
         this.key = hash.digest('base64')
     }
 
+    genNewKey(newKey) {
+        const hash = crypto.createHash('sha512')
+        hash.update(newKey)
+        this.key = hash.digest('base64')
+        return this.key
+    }
+
     //if callback is null then the file has recently created else the data of the file is past as an object
     init() {
         if (this.exist(this.path)) {
@@ -29,9 +36,9 @@ module.exports = class {
     }
 
     write(data) {
-        try{
+        try {
             fs.writeFileSync(this.path, this.encrypt(data))
-        }catch(err){
+        } catch (err) {
             onError(err)
         }
     }

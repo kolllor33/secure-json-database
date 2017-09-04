@@ -21,6 +21,13 @@ module.exports = class DB extends EventEmitter {
         }
     }
 
+    changeKey(newKey) {
+        if (this.key !== newKey) {
+            this.key = this.fileHandler.genNewKey(newKey)
+            this.update()
+        }
+    }
+
     addTable(name) {
         if (this.db[name] === undefined) {
             this.db[name] = []

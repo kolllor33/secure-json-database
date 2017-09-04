@@ -90,6 +90,14 @@ SecureJsonDB.on("write", function (){
 })
 ```
 
+### Changing the Key
+
+You now can change your key of the older databases 
+
+```js
+SecureJsonDB.changeKey("the new key")
+``` 
+
 ## Examples
 
 Example code that gives outputs after some manipulation of the data
