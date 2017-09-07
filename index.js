@@ -50,7 +50,9 @@ module.exports = class DB extends EventEmitter {
         try {
             if (data != undefined) {
                 if (this.db[tablename] != undefined) {
-                    data.id = this.genUUID()
+                    if(!data.id){
+                        data.id = this.genUUID()
+                    }
                     this.db[tablename].push(data)
                     //event emiter
                     this.emit("insert", tablename, data)

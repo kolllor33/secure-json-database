@@ -1,6 +1,6 @@
 {
   "name": "secure_json_database",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A secure json database that is easy to use.",
   "main": "index.js",
   "scripts": {},
