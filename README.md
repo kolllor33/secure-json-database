@@ -32,9 +32,10 @@ SecureJsonDB.getTable("table name")
 ```
 
 ### Manipulating data
-Adding data to the database is very simple
+Adding data to the database is very simple, latest build you can't insert the same id if the id exists
 
 ```js
+//returns true if it can write and false when it can't
 SecureJsonDB.insert("table name", data)
 ```
 

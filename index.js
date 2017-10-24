@@ -50,6 +50,14 @@ module.exports = class DB extends EventEmitter {
         try {
             if (data != undefined) {
                 if (this.db[tablename] != undefined) {
+                    
+                    var isInDB = _.filter(this.db[tablename], {
+                        id: data.id
+                    })
+                    if (isInDB[0] !== undefined) {
+                        return false
+                    }
+                    
                     if(!data.id){
                         data.id = this.genUUID()
                     }
@@ -57,6 +65,7 @@ module.exports = class DB extends EventEmitter {
                     //event emiter
                     this.emit("insert", tablename, data)
                     this.update()
+                    return true
                 } else {
                     throw new Error("Table wasn't created")
                 }
