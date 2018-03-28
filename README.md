@@ -99,6 +99,11 @@ You now can change your key of the older databases
 SecureJsonDB.changeKey("the new key")
 ``` 
 
+## Changelog
+
+In version 1.3 you now can use secure_json_database with multi core processes.
+Also there are more private methodes and variables added for security reasons.
+
 ## Examples
 
 Example code that gives outputs after some manipulation of the data

@@ -11,6 +11,10 @@ module.exports = class {
         this.key = hash.digest('base64')
     }
 
+    getFS() {
+        return fs
+    }
+
     genNewKey(newKey) {
         const hash = crypto.createHash('sha512')
         hash.update(newKey)
@@ -22,7 +26,7 @@ module.exports = class {
     init() {
         if (this.exist(this.path)) {
             //when file exist transfer content in to memory
-            var data = fs.readFileSync(this.path, {
+            let data = fs.readFileSync(this.path, {
                 encoding: "utf8"
             })
             return this.decrypt(data)
@@ -52,21 +56,29 @@ module.exports = class {
         })
     }
 
+    readSync() {
+        try {
+            return this.decrypt(fs.readFileSync(this.path, 'utf8'))
+        } catch (ex) {
+            onError(ex)
+        }
+    }
+
     encrypt(data) {
-        var cipher = crypto.createCipher("aes-256-ctr", this.key)
+        let cipher = crypto.createCipher("aes-256-ctr", this.key)
 
         if (typeof data === 'object') {
             data = JSON.stringify(data)
         }
-        var crypted = cipher.update(data, 'utf8', 'base64')
+        let crypted = cipher.update(data, 'utf8', 'base64')
         crypted += cipher.final('base64')
 
         return crypted.toString()
     }
 
     decrypt(data) {
-        var decipher = crypto.createDecipher("aes-256-ctr", this.key)
-        var dec = decipher.update(data, 'base64', 'utf8')
+        let decipher = crypto.createDecipher("aes-256-ctr", this.key)
+        let dec = decipher.update(data, 'base64', 'utf8')
         dec += decipher.final('utf8');
 
         return this.parse(dec)
