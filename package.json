@@ -1,6 +1,6 @@
 {
   "name": "secure_json_database",
-  "version": "1.3",
+  "version": "1.3.0",
   "description": "a secure json file that serves as a database",
   "main": "index.js",
   "scripts": {},
@@ -9,5 +9,20 @@
   "dependencies": {
     "deep-diff": "^0.3.8",
     "lodash": "^4.17.4"
+  },
+  "bugs": {
+    "url": "https://github.com/kolllor33/secure-json-database/issues",
+    "email": "kolllor3@gmail.com"
+  },
+  "keywords": [
+    "db",
+    "database",
+    "json",
+    "secure",
+    "noSQL"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kolllor33/secure-json-database"
   }
 }
