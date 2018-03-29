@@ -1,14 +1,13 @@
 "use strict";
 
 var fs = require("fs"),
-    crypto = require("crypto")
+    crypto = require("crypto"),
+    SHA3 = require("./sha3")
 
 module.exports = class {
     constructor(args) {
-        const hash = crypto.createHash('sha512')
-        hash.update(args.key)
         this.path = args.path
-        this.key = hash.digest('base64')
+        this.key = SHA3.sha3_256(args.key)
     }
 
     getFS() {
@@ -16,9 +15,7 @@ module.exports = class {
     }
 
     genNewKey(newKey) {
-        const hash = crypto.createHash('sha512')
-        hash.update(newKey)
-        this.key = hash.digest('base64')
+        this.key = SHA3.sha3_256(newKey)
         return this.key
     }
 

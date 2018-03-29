@@ -54,11 +54,15 @@ module.exports = class DB extends EventEmitter {
     }
 
     addTable(name) {
-        let db = _db.get(this)
-        if (db[name] === undefined) {
-            db[name] = []
-            _db.set(this, db)
-            this[_update]()
+        try{
+            let db = _db.get(this)
+            if (db[name] === undefined) {
+                db[name] = []
+                _db.set(this, db)
+                this[_update]()
+            }
+        }catch(ex){
+            throw new Error("data read from the file is corrupted do you have the right key?")
         }
     }
 
