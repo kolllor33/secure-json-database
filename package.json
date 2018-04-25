@@ -1,11 +1,11 @@
 {
   "name": "secure_json_database",
-  "version": "1.3.2",
-  "description": "a secure json file that serves as a database",
+  "version": "1.4.0",
+  "description": "A secure json file that serves as a database.",
   "main": "index.js",
   "scripts": {},
   "author": "Kobe Bogaerts",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "deep-diff": "^0.3.8",
     "lodash": "^4.17.4"

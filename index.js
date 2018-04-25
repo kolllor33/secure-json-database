@@ -1,11 +1,9 @@
-"use strict";
-
+"use strict"
 var _ = require("lodash"),
     fh = require("./Filehandler"),
-    EventEmitter = require('events'),
-    diff = require("deep-diff")
+    netHandler = require("./networkHandler")
 
-//private var
+//Private var
 let _filehandler = new WeakMap(),
     _path = new WeakMap(),
     _key = new WeakMap(),
@@ -15,10 +13,18 @@ let _filehandler = new WeakMap(),
 const _update = Symbol("update"),
     _fileWatcher = Symbol("fileWatch")
 
-module.exports = class DB extends EventEmitter {
+module.exports = class DB extends netHandler {
     constructor(args) {
-        super()
         if (args.path && args.key) {
+            if (args.network) {
+                if (args.network.peers) {
+                    super(args.network)
+                } else {
+                    super(null)
+                }
+            } else {
+                super(null)
+            }
             _db.set(this, {})
             _path.set(this, args.path)
             _key.set(this, args.key)
@@ -32,20 +38,35 @@ module.exports = class DB extends EventEmitter {
                 _db.set(this, data)
             }
 
-            _filehandler.get(this).getFS().watch(this.getPath(), (type, filename) => {
+            _filehandler.get(this).getFS().watch(this.getPath(), (type) => {
                 if (type == "change" && !hasWriteToFile) {
                     this[_fileWatcher]()
                 }
             })
+
+            super.on("netwrokUpdate", (netData) => {
+                let db = _db.get(this)
+                db = netData
+                _db.set(this, db)
+                _filehandler.get(this).write(_db.get(this))
+            })
+
         } else {
             throw new Error("Constructor expected: a path and a key in the form of {key: key, path: path}")
         }
     }
 
+    /**
+     * Get the path where your database file is stored
+     */
     getPath() {
         return _path.get(this)
     }
 
+    /**
+     * Change the key of the database
+     * @param {String} newKey 
+     */
     changeKey(newKey) {
         if (_key.get(this) !== newKey) {
             _key.set(this, _filehandler.get(this).genNewKey(newKey))
@@ -53,23 +74,34 @@ module.exports = class DB extends EventEmitter {
         }
     }
 
+    /**
+     * Add a table to the database. Also you need to do this for every table in your existing database.
+     * @param {String} name 
+     */
     addTable(name) {
-        try{
+        try {
             let db = _db.get(this)
             if (db[name] === undefined) {
                 db[name] = []
                 _db.set(this, db)
                 this[_update]()
             }
-        }catch(ex){
+        } catch (ex) {
             throw new Error("data read from the file is corrupted do you have the right key?")
         }
     }
 
+    /**
+     * Get all table names that exist
+     */
     getAllTableNames() {
         return Object.keys(_db.get(this))
     }
 
+    /**
+     * Get the table in json format
+     * @param {String} name 
+     */
     getTable(name) {
         let db = _db.get(this)
         if (db[name] == undefined) {
@@ -78,6 +110,23 @@ module.exports = class DB extends EventEmitter {
         return db[name]
     }
 
+    /**
+     * Delete a specific table
+     * @param {String} name 
+     */
+    dropTable(name) {
+        let db = _db.get(this)
+        if (db[name] != undefined) {
+            db[name] = undefined
+        }
+    }
+
+    /**
+     * Insert data in a specific table
+     * @param {String} tablename 
+     * @param {Object} data 
+     * @returns returns a boolean if the entry was created
+     */
     insert(tablename, data) {
         try {
             if (data != undefined) {
@@ -96,29 +145,33 @@ module.exports = class DB extends EventEmitter {
                     }
                     db[tablename].push(data)
                     _db.set(this, db)
-                    //event emiter
-                    this.emit("insert", tablename, data)
+                   
+                    super.emit("insert", tablename, data)
                     this[_update]()
                     return true
                 } else {
                     throw new Error("Table wasn't created")
                 }
             } else {
-                console.error("Error: Data was null or undefined!")
-                return
+                throw new Error("Error: Data was null or undefined!")
             }
         } catch (err) {
-            console.log(err)
+            throw new Error(err)
         }
     }
 
+    /**
+     * Delete all entries that meet the args
+     * @param {String} tablename 
+     * @param {Object} args 
+     */
     removeAllBy(tablename, args) {
         let db = _db.get(this)
         if (db[tablename] != undefined) {
             var removed = this.findAll(tablename, args)
             _.pullAllBy(db[tablename], removed)
-            //event emiter
-            this.emit("delete", tablename, removed)
+           
+            super.emit("delete", tablename, removed)
             _db.set(this, db)
             this[_update]()
         } else {
@@ -126,6 +179,12 @@ module.exports = class DB extends EventEmitter {
         }
     }
 
+    /**
+     * Update a specific id with the data
+     * @param {String} tablename 
+     * @param {String} id 
+     * @param {Object} data 
+     */
     updateByID(tablename, id, data) {
         if (data != undefined) {
             let db = _db.get(this)
@@ -139,18 +198,23 @@ module.exports = class DB extends EventEmitter {
                 const index = _.sortedIndexBy(db[tablename], updated[0])
                 Object.assign(db[tablename][index], data)
                 _db.set(this, db)
-                //event emiter
-                this.emit("updated", tablename, db[tablename][index])
+               
+                super.emit("updated", tablename, db[tablename][index])
                 this[_update]()
             } else {
                 throw new Error("Table wasn't created")
             }
         } else {
-            console.error("Error: Data was null or undefined!")
-            return
+            throw new Error("Error: Data was null or undefined!")
         }
     }
 
+    /**
+     * Find first entry that match args in a specific table
+     * @param {String} tablename 
+     * @param {Object} args 
+     * @returns returns the matching entry else undefined. you can chain lodash/array functions
+     */
     find(tablename, args) {
         let db = _db.get(this)
         if (db[tablename] != undefined) {
@@ -160,15 +224,27 @@ module.exports = class DB extends EventEmitter {
         }
     }
 
+    /**
+     * Find last entry that match args in a specific table
+     * @param {String} tablename 
+     * @param {Object} args 
+     * @returns returns the matching entry else undefined. you can chain lodash/array functions
+     */
     findLast(tablename, args) {
         let db = _db.get(this)
-        if (db[name] != undefined) {
+        if (db[tablename] != undefined) {
             return _.findLast(this.getTable(tablename), args)
         } else {
             throw new Error("Table wasn't created")
         }
     }
 
+    /**
+     * Find all entries that match args in a specific table
+     * @param {String} tablename 
+     * @param {Object} args 
+     * @returns returns all matching entries else undefined. you can chain lodash/array functions 
+     */
     findAll(tablename, args) {
         let db = _db.get(this)
         if (db[tablename] != undefined) {
@@ -178,6 +254,9 @@ module.exports = class DB extends EventEmitter {
         }
     }
 
+    /**
+     * Generate a uuid
+     */
     genUUID() {
         function s4() {
             return Math.floor((1 + Math.random()) * 0x10000)
@@ -188,18 +267,18 @@ module.exports = class DB extends EventEmitter {
             s4() + '-' + s4() + s4() + s4();
     }
 
-    //private functions
+    //Private functions
     [_update]() {
-        _filehandler.get(this).write(_db.get(this))
+        let db = _db.get(this)
+        _filehandler.get(this).write(db)
         hasWriteToFile = true
-        this.emit("write")
+        super.sendBroadcast(JSON.stringify(db))
+        super.emit("write")
     }
 
     [_fileWatcher]() {
         let fileData = _filehandler.get(this).readSync()
-        if (diff(_db.get(this), fileData)) {
-            _db.set(this, fileData)
-            hasWriteToFile = false
-        }
+        _db.set(this, fileData)
+        hasWriteToFile = false
     }
 }

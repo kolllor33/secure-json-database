@@ -1,4 +1,4 @@
-"use strict";
+"use strict"
 
 var fs = require("fs"),
     crypto = require("crypto"),
@@ -19,16 +19,16 @@ module.exports = class {
         return this.key
     }
 
-    //if callback is null then the file has recently created else the data of the file is past as an object
+    //If callback is null then the file has recently created else the data of the file is past as an object
     init() {
-        if (this.exist(this.path)) {
-            //when file exist transfer content in to memory
+        if (this.exist()) {
+            //When file exist transfer content in to memory
             let data = fs.readFileSync(this.path, {
                 encoding: "utf8"
             })
             return this.decrypt(data)
         } else {
-            //when file doesn't exist make a file
+            //When file doesn't exist make a file
             const fd = fs.openSync(this.path, "w")
             fs.closeSync(fd)
             fs.writeFileSync(this.path, this.encrypt("{}"))
@@ -69,7 +69,7 @@ module.exports = class {
         }
         let crypted = cipher.update(data, 'utf8', 'base64')
         crypted += cipher.final('base64')
-
+        
         return crypted.toString()
     }
 
@@ -77,12 +77,12 @@ module.exports = class {
         let decipher = crypto.createDecipher("aes-256-ctr", this.key)
         let dec = decipher.update(data, 'base64', 'utf8')
         dec += decipher.final('utf8');
-
+        
         return this.parse(dec)
     }
 
     parse(data) {
-        //if isJSON is true return parsed data else return just the data
+        //If isJSON is true return parsed data else return just the data
         return this.isJSON(data) ? JSON.parse(data) : data
     }
 
@@ -93,11 +93,11 @@ module.exports = class {
         try {
             const obj = JSON.parse(data)
             return !!obj && typeof obj === 'object'
-        } catch (e) { /* ignore */ }
+        } catch (e) { /* Ignore */ }
         return false
     }
 
-    exist(path) {
+    exist() {
         try {
             fs.statSync(this.path)
             return true

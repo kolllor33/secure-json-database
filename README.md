@@ -7,15 +7,27 @@ $ npm install secure_json_database
 ```
 
 ## Implementing
-First initialize a object for your database.
+First initialize an object for your database.
 ```js
 var sjdb = require("secure_json_database")
 
 var SecureJsonDB = new sjdb({
     path: "your path.sjson",
     key: "your private key"
+    //optional
+    ,network:{
+        peers:[{host:"address", port:"port"},...]
+        ,hostAdrs:"address"
+        ,hostPort:"port"
+    }
 })
 ```
+### Network option
+The network option has 3 things, peers (has all a list of other servers you want to sync your data with)
+hostAdrs is the address of the device that runs this code default to localhost
+hostPort is the port you want to listen on default too 9000
+
+Why you wanna use the network option? Because now you can scale your database or service over multiple servers and have data backups automaticly
 
 ### Tables
 A table is just a way of organizing your data easily
@@ -23,6 +35,9 @@ A table is just a way of organizing your data easily
 ```js
 //adding a table to the database
 SecureJsonDB.addTable("table name")
+
+//Remove a table and it's data from the database
+SecureJsonDB.dropTable("table name")
 
 //getting all the table names
 SecureJsonDB.getAllTableNames()
@@ -89,6 +104,11 @@ SecureJsonDB.on("delete", function (tablename, RemovedData){  //Note: RemovedDat
 SecureJsonDB.on("write", function (){
 
 })
+
+//the start event is triggerd when the server is listening and returns the address, port
+SecureJsonDB.on("start", function (adrs, port){
+
+})
 ```
 
 ### Changing the Key
@@ -100,6 +120,9 @@ SecureJsonDB.changeKey("the new key")
 ``` 
 
 ## Changelog
+
+In version 1.4 you now can drop a table from your database. Also there is the network feature
+that alows you to sync your database over multiple servers
 
 In version 1.3 you now can use secure_json_database with multi core processes.
 Also there are more private methodes and variables added for security reasons.
@@ -154,4 +177,7 @@ console.log(JSON.stringify(SecureJsonDB.getTable("random")))
 /*
 Output: [{"number":0,"tracker":"updated","id":"3dffb82b-fab5-ec71-40ed-1e335c0c6d0e"},{"number":1,"tracker":"track2","id":"0c59b061-7fcc-5aaf-3404-b0f9e04bebb5"},{"number":3,"tracker":"track2","id":"6f0ca13d-9fa6-7aa9-87e0-5bbe20bafaf5"},{"number":5,"tracker":"track2","id":"44583255-e229-3a51-4c4b-7ca82c6d5e1c"},{"number":7,"tracker":"track2","id":"8e93747d-1606-a180-f40c-facd2ee3b3ee"},{"number":9,"tracker":"track2","id":"60ff12a2-4b89-f2d2-3738-d8d155716574"}]
 */
+
+//Remove table named random and it's data 
+SecureJsonDB.dropTable("random")
 ```
