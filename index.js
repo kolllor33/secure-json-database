@@ -1,6 +1,7 @@
 "use strict"
-var _ = require("lodash"),
+const _ = require("lodash"),
     fh = require("./Filehandler"),
+    crypto = require("crypto"),
     netHandler = require("./networkHandler")
 
 //Private var
@@ -11,7 +12,8 @@ let _filehandler = new WeakMap(),
     hasWriteToFile = false
 
 const _update = Symbol("update"),
-    _fileWatcher = Symbol("fileWatch")
+    _fileWatcher = Symbol("fileWatch"),
+    PTABLENAME = "PASS"
 
 module.exports = class DB extends netHandler {
     constructor(args) {
@@ -133,7 +135,7 @@ module.exports = class DB extends netHandler {
                 let db = _db.get(this)
                 if (db[tablename] != undefined) {
 
-                    var isInDB = _.filter(db[tablename], {
+                    let isInDB = _.filter(db[tablename], {
                         id: data.id
                     })
                     if (isInDB[0] !== undefined) {
@@ -145,7 +147,7 @@ module.exports = class DB extends netHandler {
                     }
                     db[tablename].push(data)
                     _db.set(this, db)
-                   
+
                     super.emit("insert", tablename, data)
                     this[_update]()
                     return true
@@ -168,9 +170,9 @@ module.exports = class DB extends netHandler {
     removeAllBy(tablename, args) {
         let db = _db.get(this)
         if (db[tablename] != undefined) {
-            var removed = this.findAll(tablename, args)
+            let removed = this.findAll(tablename, args)
             _.pullAllBy(db[tablename], removed)
-           
+
             super.emit("delete", tablename, removed)
             _db.set(this, db)
             this[_update]()
@@ -189,7 +191,7 @@ module.exports = class DB extends netHandler {
         if (data != undefined) {
             let db = _db.get(this)
             if (db[tablename] != undefined) {
-                var updated = _.filter(db[tablename], {
+                let updated = _.filter(db[tablename], {
                     id: id
                 })
                 if (updated[0] === undefined) {
@@ -198,7 +200,7 @@ module.exports = class DB extends netHandler {
                 const index = _.sortedIndexBy(db[tablename], updated[0])
                 Object.assign(db[tablename][index], data)
                 _db.set(this, db)
-               
+
                 super.emit("updated", tablename, db[tablename][index])
                 this[_update]()
             } else {
@@ -251,6 +253,59 @@ module.exports = class DB extends netHandler {
             return _.filter(this.getTable(tablename), args)
         } else {
             throw new Error("Table wasn't created")
+        }
+    }
+
+    /**
+     * Save a password to the database, the id is used when decrypting use something that identifies the password like a uniek username.
+     * encryption used is pbkdf2(salt=128 randomBytes)
+     * @param {String} password 
+     * @param {String} id
+     */
+    savePassWordWithId(password, id) {
+        this.addTable(PTABLENAME)
+        if (this.find(PTABLENAME, {
+            name: id
+        })) {
+            return
+        }
+        try {
+            let salt = crypto.randomBytes(128).toString("base64")
+            let iter = _.random(10000, 50000)
+            let derivedKey = crypto.pbkdf2Sync(password, salt, iter, 512, 'sha512')
+            this.insert(PTABLENAME, {
+                salt: salt,
+                name: id,
+                iter: iter,
+                hash: derivedKey.toString('base64')
+            })
+        } catch (err) {
+            throw new Error("Error when hashing password")
+        }
+    }
+
+    /**
+     * Check the passwordTry if it matches the password stored for id
+     * @param {String} passwordTry 
+     * @param {String} id 
+     * @returns returns a boolean if the password matches this is true else this is false
+     */
+    isPassWordForIdCorrect(passwordTry, id) {
+        let saved = this.find(PTABLENAME, {
+            name: id
+        })
+        if (!saved) {
+            return false
+        }
+        try {
+            let derivedKey = crypto.pbkdf2Sync(passwordTry, saved.salt, saved.iter, 512, 'sha512');
+            if (derivedKey.toString('base64') === saved.hash) {
+                return true
+            } else {
+                return false
+            }
+        } catch (err) {
+            throw new Error("Error while decrypting password")
         }
     }
 
