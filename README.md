@@ -80,9 +80,19 @@ var allData = SecureJsonDB.findAll("table name", properties) //properties must b
 // allData is an array off all the matched data
 ```
 
+### Saving and checking passwords
+
+```js
+//save the password with id test to the database
+SecureJsonDB.savePassWordWithId("password", "test") //test should be unique
+
+//check if password of id(test) in the database equele is to passwordTry and return a boolean
+var isCorrect = SecureJsonDB.isPassWordForIdCorrect("passwordTry", "test")
+```
+
 ### Events
 
-In version 1.1.0 there are events that you can use. The events you can listen on are "insert","updated","delete" and "write"
+In version 1.1.0 there are events that you can use. The events you can listen on are "insert","updated","delete","write" and "start"
 
 ```js
 //the insert event is triggerd when you add data to the database
@@ -120,6 +130,11 @@ SecureJsonDB.changeKey("the new key")
 ``` 
 
 ## Changelog
+
+In version 1.5 you now can store passwords and check them by referring to them with a username 
+like identifier. The encryption used for the procces is pbkdf2. Fixed a bug where cluster network
+databases where crashing. NOTE: clusters and networking are still unstable most issues with this
+is fixed by reloading the process.
 
 In version 1.4 you now can drop a table from your database. Also there is the network feature
 that alows you to sync your database over multiple servers

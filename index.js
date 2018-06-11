@@ -40,19 +40,21 @@ module.exports = class DB extends netHandler {
                 _db.set(this, data)
             }
 
-            _filehandler.get(this).getFS().watch(this.getPath(), (type) => {
-                if (type == "change" && !hasWriteToFile) {
+            _filehandler.get(this).getFS().watchFile(this.getPath(), (curr, prev) => {
+                if (!hasWriteToFile && curr.mtime > prev.mtime) {
                     this[_fileWatcher]()
                 }
             })
-
+            
             super.on("netwrokUpdate", (netData) => {
-                let db = _db.get(this)
-                db = netData
-                _db.set(this, db)
-                _filehandler.get(this).write(_db.get(this))
+                const version = crypto.createHash('md5').update(JSON.stringify(_db.get(this))).digest("hex")
+                if (version != netData.version) {
+                    let db = _db.get(this)
+                    db = netData.db
+                    _db.set(this, db)
+                    _filehandler.get(this).write(_db.get(this))
+                }
             })
-
         } else {
             throw new Error("Constructor expected: a path and a key in the form of {key: key, path: path}")
         }
@@ -139,9 +141,8 @@ module.exports = class DB extends netHandler {
                         id: data.id
                     })
                     if (isInDB[0] !== undefined) {
-                        return false;
+                        return false
                     }
-
                     if (!data.id) {
                         data.id = this.genUUID()
                     }
@@ -220,7 +221,7 @@ module.exports = class DB extends netHandler {
     find(tablename, args) {
         let db = _db.get(this)
         if (db[tablename] != undefined) {
-            return _.find(this.getTable(tablename), args)
+            return _.find(db[tablename], args)
         } else {
             throw new Error("Table wasn't created")
         }
@@ -235,7 +236,7 @@ module.exports = class DB extends netHandler {
     findLast(tablename, args) {
         let db = _db.get(this)
         if (db[tablename] != undefined) {
-            return _.findLast(this.getTable(tablename), args)
+            return _.findLast(db[tablename], args)
         } else {
             throw new Error("Table wasn't created")
         }
@@ -250,7 +251,7 @@ module.exports = class DB extends netHandler {
     findAll(tablename, args) {
         let db = _db.get(this)
         if (db[tablename] != undefined) {
-            return _.filter(this.getTable(tablename), args)
+            return _.filter(db[tablename], args)
         } else {
             throw new Error("Table wasn't created")
         }
@@ -298,7 +299,7 @@ module.exports = class DB extends netHandler {
             return false
         }
         try {
-            let derivedKey = crypto.pbkdf2Sync(passwordTry, saved.salt, saved.iter, 512, 'sha512');
+            let derivedKey = crypto.pbkdf2Sync(passwordTry, saved.salt, saved.iter, 512, 'sha512')
             if (derivedKey.toString('base64') === saved.hash) {
                 return true
             } else {
@@ -316,24 +317,29 @@ module.exports = class DB extends netHandler {
         function s4() {
             return Math.floor((1 + Math.random()) * 0x10000)
                 .toString(16)
-                .substring(1);
+                .substring(1)
         }
         return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-            s4() + '-' + s4() + s4() + s4();
+            s4() + '-' + s4() + s4() + s4()
     }
 
     //Private functions
     [_update]() {
         let db = _db.get(this)
         _filehandler.get(this).write(db)
+        if (super.hasChild()) {
+            super.sendBroadcast(JSON.stringify(db))
+        }
         hasWriteToFile = true
-        super.sendBroadcast(JSON.stringify(db))
         super.emit("write")
     }
-
+    
     [_fileWatcher]() {
         let fileData = _filehandler.get(this).readSync()
         _db.set(this, fileData)
+        if (super.hasChild()) {
+            super.sendBroadcast(JSON.stringify(_db.get(this)))
+        }
         hasWriteToFile = false
     }
 }
