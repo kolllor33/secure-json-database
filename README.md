@@ -133,8 +133,7 @@ SecureJsonDB.changeKey("the new key")
 
 In version 1.5 you now can store passwords and check them by referring to them with a username 
 like identifier. The encryption used for the procces is pbkdf2. Fixed a bug where cluster network
-databases where crashing. NOTE: clusters and networking are still unstable most issues with this
-is fixed by reloading the process.
+databases where crashing.
 
 In version 1.4 you now can drop a table from your database. Also there is the network feature
 that alows you to sync your database over multiple servers

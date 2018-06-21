@@ -7,8 +7,6 @@ const _ = require("lodash"),
     server = require('http').createServer(app),
     io = require('socket.io')(server),
     CONFIRM_MESSAGE = "helloworld"
-    // ,_toJSON = Symbol("toJSON"),
-    // _connectToPeers = Symbol("connectToPeers")
 
 let peers = [],
     serverSecret = new WeakMap(),
