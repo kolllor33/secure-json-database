@@ -7,15 +7,17 @@ var fs = require("fs"),
 module.exports = class {
     constructor(args) {
         this.path = args.path
-        this.key = SHA3.sha3_256(args.key)
+        this.key = new Buffer.from(SHA3.sha3_256(args.key), "hex").toString("ascii")
     }
 
     getFS() {
         return fs
     }
 
-    genNewKey(newKey) {
-        this.key = SHA3.sha3_256(newKey)
+    genNewKey(newKey, oldKey) {
+        if (new Buffer.from(SHA3.sha3_256(oldKey), "hex").toString("ascii") == this.key) {
+            this.key = new Buffer.from(SHA3.sha3_256(newKey), "hex").toString("ascii")
+        }
         return this.key
     }
 
@@ -44,15 +46,6 @@ module.exports = class {
         }
     }
 
-    read(callback) {
-        fs.readFile(this.path, 'utf8', (err, data) => {
-            if (err) {
-                onError(err)
-            }
-            callback(this.decrypt(data))
-        })
-    }
-
     readSync() {
         try {
             return this.decrypt(fs.readFileSync(this.path, 'utf8'))
@@ -62,8 +55,7 @@ module.exports = class {
     }
 
     encrypt(data) {
-        let cipher = crypto.createCipher("aes-256-ctr", this.key)
-
+        let cipher = crypto.createCipheriv("aes-256-ctr", this.key, new Buffer.alloc(16))
         if (typeof data === 'object') {
             data = JSON.stringify(data)
         }
@@ -74,7 +66,7 @@ module.exports = class {
     }
 
     decrypt(data) {
-        let decipher = crypto.createDecipher("aes-256-ctr", this.key)
+        let decipher = crypto.createDecipheriv("aes-256-ctr", this.key, new Buffer.alloc(16))
         let dec = decipher.update(data, 'base64', 'utf8')
         dec += decipher.final('utf8');
         

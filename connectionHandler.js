@@ -45,12 +45,12 @@ function init(args) {
                 let bobECDH = crypto.createECDH("secp256k1")
                 bobECDH.generateKeys()
                 let bobPublicKey = bobECDH.getPublicKey("base64", "compressed")
-                serverSecret.set(socket, bobECDH.computeSecret(key, "base64", "base64"))
+                serverSecret.set(socket, new Buffer.from(bobECDH.computeSecret(key, "base64", "base64"), "base64").toString("ascii"))
                 socket.emit("handClientA", bobPublicKey)
             })
 
             socket.on("confirm", (_data) => {
-                let serverDecipher = crypto.createDecipher("aes-256-ctr", serverSecret.get(socket))
+                let serverDecipher = crypto.createDecipheriv("aes-256-ctr",serverSecret.get(socket), new Buffer.alloc(16))
                 let data = serverDecipher.update(_data, 'base64', 'utf8')
                 data += serverDecipher.final("utf8")
                 if (data === CONFIRM_MESSAGE) {
@@ -85,11 +85,11 @@ function _connectToPeers() {
             let aliceECDH = crypto.createECDH("secp256k1")
             aliceECDH.generateKeys()
             let alicePublicKey = aliceECDH.getPublicKey("base64", "compressed")
-            socket.emit("handServerA", alicePublicKey)
-
+            socket.emit("handServerA", alicePublicKey) 
+           
             socket.on("handClientA", (key) => {
-                clientSecret.set(socket, aliceECDH.computeSecret(key, "base64", "base64"))
-                let clientCipher = crypto.createCipher("aes-256-ctr", clientSecret.get(socket))
+                clientSecret.set(socket, new Buffer.from(aliceECDH.computeSecret(key, "base64", "base64"), "base64").toString("ascii"))
+                let clientCipher = crypto.createCipheriv("aes-256-ctr", clientSecret.get(socket), new Buffer.alloc(16))
                 let data = clientCipher.update(CONFIRM_MESSAGE, 'utf8', 'base64')
                 data += clientCipher.final("base64")
                 socket.emit("confirm", data)
@@ -97,7 +97,7 @@ function _connectToPeers() {
 
             socket.on("db", (obj) => {
                 const hmac = crypto.createHmac('sha256', clientSecret.get(socket))
-                let clientDecipher = crypto.createDecipher("aes-256-ctr", clientSecret.get(socket))
+                let clientDecipher = crypto.createDecipheriv("aes-256-ctr", clientSecret.get(socket), new Buffer.alloc(16))
                 let data = clientDecipher.update(obj.msg, 'base64', 'utf8')
                 data += clientDecipher.final("utf8")
                 hmac.update(data)
@@ -137,7 +137,7 @@ function sendBroadcastMsg(msg, ...args) {
             socket = sockets[args[0]]
             const hmac = crypto.createHmac('sha256', serverSecret.get(socket))
             hmac.update(msg)
-            serverCipher = crypto.createCipher("aes-256-ctr", serverSecret.get(socket))
+            serverCipher = crypto.createCipheriv("aes-256-ctr", serverSecret.get(socket), new Buffer.alloc(16))
             data = serverCipher.update(msg, 'utf8', 'base64')
             data += serverCipher.final("base64")
             socket.emit("db", {
@@ -149,7 +149,7 @@ function sendBroadcastMsg(msg, ...args) {
                 socket = sockets[i]
                 const hmac = crypto.createHmac('sha256', serverSecret.get(socket))
                 hmac.update(msg)
-                serverCipher = crypto.createCipher("aes-256-ctr", serverSecret.get(socket))
+                serverCipher = crypto.createCipheriv("aes-256-ctr", serverSecret.get(socket), new Buffer.alloc(16))
                 data = serverCipher.update(msg, 'utf8', 'base64')
                 data += serverCipher.final("base64")
                 socket.emit("db", {

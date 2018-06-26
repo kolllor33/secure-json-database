@@ -22,6 +22,9 @@ var SecureJsonDB = new sjdb({
     }
 })
 ```
+## Important Notice
+In update 1.6 there is an different encryption algoritm. If you allready have an older database please find a way to convert it
+to the new one otherwise your data becomes corrupted.
 ### Network option
 The network option has 3 things, peers (has all a list of other servers you want to sync your data with)
 hostAdrs is the address of the device that runs this code default to localhost
@@ -123,13 +126,16 @@ SecureJsonDB.on("start", function (adrs, port){
 
 ### Changing the Key
 
-You now can change your key of the older databases 
+You now can change your key of the older databases. You'll need the old key to change it to the new. 
 
 ```js
-SecureJsonDB.changeKey("the new key")
+SecureJsonDB.changeKey("the new key", "the old key")
 ``` 
 
 ## Changelog
+
+In version 1.6 there is a security update the encryption now uses an IV. NOTE: transfer your data to an other file
+becuase after updating your data will be corrupted 
 
 In version 1.5 you now can store passwords and check them by referring to them with a username 
 like identifier. The encryption used for the procces is pbkdf2. Fixed a bug where cluster network

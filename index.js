@@ -68,12 +68,13 @@ module.exports = class DB extends netHandler {
     }
 
     /**
-     * Change the key of the database
-     * @param {String} newKey 
+     * Change the key of the database. You'll need the old key to change to key
+     * @param {String} newKey
+     * @param {String} oldKey 
      */
-    changeKey(newKey) {
+    changeKey(newKey, oldkey) {
         if (_key.get(this) !== newKey) {
-            _key.set(this, _filehandler.get(this).genNewKey(newKey))
+            _key.set(this, _filehandler.get(this).genNewKey(newKey, oldkey))
             this[_update]()
         }
     }
